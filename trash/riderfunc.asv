@@ -1,0 +1,24 @@
+function [sys] = riderfunc(Xn,X0,bike)
+
+% Bike
+sys.Gyu =  bike(3:4,2);
+sys.Gyw =  bike(3:4,3);
+sys.Gzu = -bike(3,2);
+sys.Gzw = -bike(3,3);
+
+X = Xn.*X0;
+Gnm = tf(900,[1 2*.707*30  900]);
+s = tf('s');
+
+
+C = -[X(1) X(2) X(3) X(4) X(5) X(6)];
+sys.K = C*[eye(2)*s^2; eye(2)*s; eye(2)];
+% sys.K = C*[s^2 0;s 0;1 0]*Gnm*exp(-0.0*s);
+ 
+% C = -[X(1) X(2) X(3) X(4)];
+% sys.K = C*[eye(2)*s^2; eye(2)*s; eye(2)]*Gnm*exp(-0.0*s);
+
+% sys.gains = C;
+
+sys.z = minreal(sys.Gzw + sys.Gzu*((eye(1)-sys.K*sys.Gyu)\sys.K*sys.Gyw));
+sys.y = minreal(sys.Gyw + sys.Gyu*((eye(1)-sys.K*sys.Gyu)\sys.K*sys.Gyw));

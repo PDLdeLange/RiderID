@@ -1,0 +1,2 @@
+function e = errorfunc(Xn,X0,u,y,bike);
+
