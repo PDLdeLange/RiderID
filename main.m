@@ -8,7 +8,7 @@ catch me % If data is not found then do ...
     disp(me);
     disp('No Data Detected -> Processing...');
     raw = davisdat(); % Load davis Data
-    fil = davisfilter(raw,0.1,[1 11600]);% Filtering davis data
+    fil = davisfilter(raw,0.1);% Filtering davis data
     fir = firestimation(fil,2^9,0.2); % Finite impulse response
      bike = davisbike(raw.v); % Bicycle model from Davis
     [sys,opt] = parametricmod(fir,bike,1); % Parametric model optimization

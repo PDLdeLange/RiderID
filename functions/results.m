@@ -4,7 +4,7 @@ function res = results(fil,fir,mod)
     % Simulation by convolution of the FIR model and input force f.]
     res = fil;
     for i = 1:size(fil.y,2);
-        res.y(:,i) = conv(fil.f,fir.g(:,i),'same');
+        res.y(:,i) = conv(fil.f,fir.g(:,i),'same')/fil.Fs;
     end
 
     % Error is difference between model and simulation output
