@@ -5,7 +5,9 @@ function fir = firestimation(fil,m,wn)
     M = 2*m+1;
 
     % Timeshift vector tau
-    tau = 1/fil.Fs*(-m:m)';
+    DeltaT = 1./fil.Fs;
+    tau = DeltaT*(-m:m)';
+    
 
     % FIR windowing
     win = zeros(size(tau)); win(m+2:end) = 1;
@@ -17,7 +19,7 @@ function fir = firestimation(fil,m,wn)
     % For every output y
     g = zeros(M,N); g_raw = zeros(M,N);
     for i = 1:N
-        g_raw(:,i) = markovparm(fil.y(:,i),fil.f,m);
+        g_raw(:,i) = markovparm2(fil.y(:,i),fil.f,m)/DeltaT;
         g(:,i) = filtfilt(b,a,g_raw(:,i));
         g(:,i) = g(:,i).*win;
     end

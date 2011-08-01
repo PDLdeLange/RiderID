@@ -1,4 +1,4 @@
-function sys = parametricmod(fir,bike,flag)
+function [sys,opt] = parametricmod(fir,bike,flag)
 % Script for determining an optimal parametric fit of the impulse response.
 
     % Initial parameters based on optimal control theory:
@@ -8,34 +8,48 @@ function sys = parametricmod(fir,bike,flag)
 %     X0 = [   -6.3163  -47.7830  -13.4008   -0.8079  -22.5410    6.0228];
     
     X0n = ones(size(X0)); 
-    e0n = norm(errorfunc(X0n,X0,1,fir,bike));
+    e0  = norm(errorfunc(X0n,X0,1,fir,bike));
     
     % Optimize the model using the LSQNONLIN algorithm if flag is set to 1
     if flag == 1
-        Xn = lsqnonlin(@(Xn)errorfunc(Xn,X0,e0n,fir,bike),X0n);
+        [Xn,resnorm,en,exitflag,output,~,Jn] = lsqnonlin(@(Xn)errorfunc(Xn,X0,e0,fir,bike),X0n);
     else 
         Xn = X0n;
         disp('Skipping optimiziation, turn flag to 1 to enable optimization');
     end
     
-    % Evaluate model
-    X  = Xn.*X0;    
+    % Unnormalizing output
+    e =  en.*e0;
+    X  = Xn.*X0;
+    J  = Jn./repmat(X0,size(Jn,1),1).*e0;
+    sem = full(sqrt(diag(inv(J'*J))*sum(e.^2)/length(e)));
+
+    
+    % Model output
     sys = riderfunc(X,bike);
     sys.X = X;
-    sys.X0 = X0;
     sys.lqr.K = K;
+    
+    % Optimization output
+    opt.X0 = X0;
+    opt.Jn = Jn;
+    opt.Xn = Xn;
+    opt.resnorm = resnorm;
+    opt.en = en;
+    opt.exitflag = exitflag;
+    opt.output = output;
+    opt.sem = sem;
 
 end
 
 % Error definition
-function en = errorfunc(Xn,X0,e0n,fir,bike)
-    Fs = 1/(fir.tau(2)-fir.tau(1));
+function en = errorfunc(Xn,X0,e0,fir,bike)
     X = Xn.*X0; % Renormalizing
     sys = riderfunc(X,bike);
-    ymod = impulse(sys.y(1,:),fir.tau-fir.tau(1));
-    gmod = ymod/Fs;
-    g = [fir.g(fir.m+1:end,1);zeros(fir.m,1)];
-    en = (g - gmod)/e0n;
+    ymod = impulse(sys.y,fir.tau-fir.tau(1));
+    gmod = ymod;
+    g = [fir.g(fir.m+1:end,:);zeros(fir.m,2)];
+    en = reshape(g - gmod,numel(g),1)/e0;
     disp(1/2*sum(en.^2));
 end
 

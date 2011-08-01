@@ -11,7 +11,7 @@ function res = results(fil,fir,mod)
     res.e = fil.y - res.y; 
     res.legend = {'\phi','\delta'};
     res.ylim = 4/3*max(abs(res.y))'*([-1 1]+1/4);
-    
-%     res.ymod = sim(mod,fil.f);
-    
+        
+    res.E = 1/sqrt(res.N)*fft(res.e)
+    res.See = 1/res.N*fft
 end
