@@ -6,7 +6,7 @@ function sys = davisbike(v)
 %
 
     % Load parameters into a structure
-    addpath('functions','models');
+    addpath('functions');
     par = par_text_to_struct('data/bicycleparms.m');
     % Generates state space matrices
     [aMat, bMat, ~, ~] = whipple_pull_force(par, v);

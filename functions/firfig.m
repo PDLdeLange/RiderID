@@ -1,7 +1,7 @@
 function fig = firfig(fir,sys,i,j)
-
-    g_sys = [zeros(fir.m,2);impulse(sys.y,fir.tau(fir.m+1:end))];
-    
+    u = zeros(size(fir.tau(fir.m+1:end)));
+    u(1) = 1/(fir.tau(2)-fir.tau(1));    
+    g_sys = [zeros(fir.m,2);lsim(sys.y,u,fir.tau(fir.m+1:end))];
     fir.ylim = 5/3*max(abs(fir.g))'*([-1 1]+1/5);
     
     figure(i); clf;

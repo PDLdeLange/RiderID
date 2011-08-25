@@ -1,19 +1,38 @@
-function [sys] = riderfunc(X,bike)
+function [mod] = riderfunc(X,s,i,mod)
 
-% Bike
-sys.Gyu =  bike(3:4,2);
-sys.Gyw =  bike(3:4,3);
-sys.Gzu = -bike(3,2);
-sys.Gzw = -bike(3,3);
+    % Declarations/limitations
+    Gnm = 900/(s^2 + 2*.707*30*s + 900);
+    delay = exp(-0.06*s);
 
-par.nm.omega0 = 2*pi*2.17; par.nm.beta = 1/2*sqrt(2);
-Hact   = 1/(par.nm.omega0^2*s^2+2*par.nm.beta/par.nm.omega0);
+    mod.X = X;
+    mod.C =  mod.X*[eye(2); eye(2)/s; eye(2)*s];
+    % Casewise multiple model structures
+    switch i
+        case 1; % PID controller
+%             mod.X =  X;
+            mod.K = -mod.C*Gnm;
+        case 2; % reduced PID type controller
+%             mod.X = [0 X];
+            mod.K = -mod.C*Gnm;
+        case 3; % reduced PID controller
+%             mod.X = [0 X(1) X(2) 0 X(3) X(4)];
+            mod.K = -mod.C*Gnm;
+       case 4; % 5 parameter PID type controller with delay
+%             mod.X = [0 X];
+            mod.K = -mod.C*Gnm*delay;
+       case 5; % 4 parameter PID type controller with delay
+%             mod.X = [0 X(1) X(2) X(3) X(4) 0 ];
+            mod.K = -mod.C*Gnm*delay;
+        otherwise
+        disp('Non existing model number input');
+    end
 
-% State gains
-sys.gains = -X;
-Gnm = tf(900,[1 2*.707*30  900]);
-s = tf('s');
-sys.K = sys.gains*[eye(2)/s; eye(2)*s; eye(2)]*Gnm*exp(-0.00*s);
-
-sys.z = minreal(sys.Gzw + sys.Gzu*((eye(1)-sys.K*sys.Gyu)\sys.K*sys.Gyw));
-sys.y = minreal(sys.Gyw + sys.Gyu*((eye(1)-sys.K*sys.Gyu)\sys.K*sys.Gyw));
+    % Calculate closed loop system responses
+    me = [];
+    mod.z = mod.G.zw + mod.G.zu*((eye(1)-mod.K*mod.G.yu)\mod.K*mod.G.yw);
+    mod.y = mod.G.yw + mod.G.yu*((eye(1)-mod.K*mod.G.yu)\mod.K*mod.G.yw);
+    try mod.y =  minreal(mod.y); catch me; end
+    try mod.z =  minreal(mod.z); catch me; end
+    disp(me);
+    
+     
