@@ -1,4 +1,4 @@
-function [g,tau] = markovparm2(y,u,m)
+function [g,tau] = markovparm2(y,u,m1,m2)
 % function [g,tau] = markovparm(y,u,m)
 %
 % Estimates a finite number of Markov parameters g(tau) based on input u
@@ -7,15 +7,16 @@ function [g,tau] = markovparm2(y,u,m)
 % may be slow for large datasets. 
 %
 n = length(y);
-tau = (-m:m)';
-U = zeros(n,2*m+1);
+tau = (m1:m2)';
+U = zeros(n,length(tau));
 Y = zeros(n,1);
+
 for i = 1:n
-    for j = -m:m
+    for j = m1:m2
         if (i-j >= 1) && (i-j <= n)
-            U(i,j+m+1) = u(i-j);
+            U(i,j-m1+1) = u(i-j);
         else 
-            U(i,j+m+1) = 0;
+            U(i,j-m1+1) = 0;
         end 
     end
     Y(i,:) = y(i);

@@ -1,38 +1,31 @@
 function [mod] = riderfunc(X,s,i,mod)
 
+    Ts = 0.005;
+
     % Declarations/limitations
-    Gnm = 900/(s^2 + 2*.707*30*s + 900);
-    delay = exp(-X(7)*s);
+    omegac = 2*pi*2.17; %2*pi*2.17;
+    Gnm = omegac^2/(s^2 + 2*sqrt(1/2)*omegac*s + omegac^2);
 
-    mod.X = X(1:7);
-    pid = [1;1/s;s];
-    mod.C =  mod.X(1:6)*[pid zeros(3,1); zeros(3,1) pid];
-    % Casewise multiple model structures
-    switch i
-        case 1; % PID controller
-            mod.K = -mod.C*Gnm;
-        case 2; % reduced PID type controller
-            mod.K = -mod.C*Gnm;
-        case 3; % reduced PID controller
-            mod.K = -mod.C*Gnm;
-        case 4; % 5 parameter PID type controller with delay
-            mod.K = -mod.C*Gnm;
-        case 5; % 4 parameter PID type controller with delay
-            mod.K = -mod.C*Gnm*delay;
-        case 6; % 4 parameter PID type controller with delay
-            mod.K = -mod.C*Gnm*delay;
-        case 7; % 4 parameter PID type controller with delay
-            mod.K = -mod.C*Gnm*delay;
-        otherwise
-        disp('Non existing model number input');
+    % Time delay:
+    delay = 1;
+    if i>5
+        z = -0.030*s;
+        delay = (1+1/2*z+1/12*z^2)/(1-1/2*z+1/12*z^2);
     end
-
-    % Calculate closed loop system responses
-    me = [];
-    mod.z = mod.G.zw + mod.G.zu*((eye(1)-mod.K*mod.G.yu)\mod.K*mod.G.yw);
-    mod.y = mod.G.yw + mod.G.yu*((eye(1)-mod.K*mod.G.yu)\mod.K*mod.G.yw);
-    try mod.y =  minreal(mod.y); catch me; end
-    try mod.z =  minreal(mod.z); catch me; end
-    disp(me);
     
-     
+    % Gain model
+    mod.X = X;
+    pid = [1;1/s;s;s^2];
+    mod.C =  mod.X(1:8)*[pid zeros(4,1); zeros(4,1) pid];
+    mod.K = -mod.C*Gnm*delay;
+
+%     % Discretization
+%     mod.K = c2d(mod.K,Ts);
+%     mod.G.yu = c2d(mod.G.yu,Ts);
+%     mod.G.yw = c2d(mod.G.yw,Ts);
+ 
+    % Calculate closed loop system responses
+    me = []; %#ok<NASGU>
+    mod.y =  mod.G.yw + mod.G.yu*((eye(1)-mod.K*mod.G.yu)\mod.K*mod.G.yw);
+    try mod.y =  minreal(mod.y); catch me; end %#ok<NASGU>
+    mod.z = -mod.y(1);

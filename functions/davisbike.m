@@ -18,6 +18,11 @@ function sys = davisbike(v)
     B = bMat(i,:);
     C = eye(4);
     D = 0;
+%     % Set up State Space matrices
+%     A = [aMat(i,i) zeros(4,2); zeros(2) eye(2) zeros(2)];
+%     B = [bMat(i,:); zeros(2,3)];
+%     C = eye(6);
+%     D = 0;
     
     % Combine A,B,C and D matrices into a state space object.
     sys = ss(A,B,C,D);

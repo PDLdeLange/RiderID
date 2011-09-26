@@ -5,14 +5,14 @@ dav = davisdat();
 % Davis results check
 figure(1);
 subplot(3,1,1);
-    plot(dav.t,dav.y(:,3),'k'); hold on;
+    plot(dav.t,dav.y(:,1),'k'); hold on;
     ylabel('Steering Angle (rad)');
     title('Raw measurements');
 subplot(3,1,2);
-    plot(dav.t,dav.y(:,4),'k'); hold on;
+    plot(dav.t,dav.y(:,2),'k'); hold on;
     ylabel('Roll Angle (rad)');
 subplot(3,1,3);
-    plot(dav.t,dav.force,'k');
+    plot(dav.t,dav.w,'k');
     ylabel('Force input (N)');
     xlabel('Time (s)');
 sdf('Latex');
@@ -32,11 +32,11 @@ f = (0:P/2-1)'/t(end);
 u = zeros(P,D); y1 = zeros(P,D); y2 = zeros(P,D);
 j = 1; i = 1;
 while i < dav.N; % For every sample
-    if abs(dav.force(i)) > 20; % Check wether input treshhold is exceeded
+    if abs(dav.w(i)) > 20; % Check wether input treshhold is exceeded
         sel = (1:P)+i-shift;
-        w(:,j) = dav.force(sel,1); % Force selection
-        y1(:,j) = dav.y(sel,3); % Roll angle selection
-        y2(:,j) = dav.y(sel,4); % Steering angle selection
+        w(:,j) = dav.w(sel,1); % Force selection
+        y1(:,j) = dav.y(sel,1); % Roll angle selection
+        y2(:,j) = dav.y(sel,2); % Steering angle selection
         disp([i,j])
         i = i + P; % Skip first P samples so that the blocks don't overlap.
         j = j + 1; % Next block
@@ -47,14 +47,16 @@ end
 
 %% Identification toolbox
 
-w = mean(w,2);
-y = [mean(y1,2),mean(y2,2)];
 
-data = iddata(y,w,dav.Fs^-1);
 
-m = armax(data(:,1),[4 4 4 4]);
-m = pem(data)
-ymod = sim(m,w);
+
+
+% 
+% data = iddata(y,w,dav.Fs^-1);
+% 
+% m = armax(data(:,1),[4 4 4 4]);
+% m = pem(data)
+% ymod = sim(m,w);
 
 
 %% Plotting
@@ -65,7 +67,7 @@ subplot(3,1,1);
 title('Filtered Measurments');
     plot(t,y1,':'); hold on;
     plot(t,mean(y1,2),'k-');
-    plot(t,mean(ymod,2),'k-');
+%     plot(t,mean(ymod,2),'k-');
     ylabel('Roll angle (rad)');
 subplot(3,1,2);
     plot(t,y2,':'); hold on;

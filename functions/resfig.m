@@ -1,23 +1,32 @@
-function fig = resfig(fil,res,i,j,T)
+function fig = npmfig(npm,dat,i,j,T)
 
-% Davis results check
+    
+    leg = {'\phi','\delta'};
+    lim = {0.1,0.5};
+
+
+% Davis npmults check
     figure(i); clf; 
-    subplot(5,1,1:2);
-        h(1) = plot(res.t,fil.y(:,j),'Color',0.5*ones(3,1)); hold on % Total
-        h(2) = plot(res.t,res.y(:,j),':k'); % Deterministic
-        legend(h,[res.legend{j} '_{measured}'],[res.legend{j} '_{mod}'],2); legend('boxoff');
-        xlim(T); ylim(res.ylim(j,:));
-        title('Measurement Results'); box off; ylabel('angle (rad)');
-    subplot(5,1,3:4); 
-        h = plot(res.t,res.e(:,j),'k');  hold on;% Noise
-        legend(h,'e',2); legend('boxoff');
-        xlim(T); ylim(res.ylim(j,:));
-        box off; ylabel('angle (rad)');
-    subplot(5,1,5);
-        h = plot(res.t,res.f,'k');
-        xlim(T); ylim(150*[-1 1]-100);
-        box off; ylabel('force (N)'); 
-        legend(h,'f',3);legend('boxoff');
+    subplot(3,1,1);
+        h = plot(dat.t,dat.y(:,j),'k'); hold on % Total
+        legend(h,'y(t)',2); legend('boxoff');
+        xlim(T); ylim(lim{j}*([-1 1]+1/3));
+        title('Output decomposition: y(t) = G(q)w(t) + v(t)'); box off; ylabel('angle (rad)');
+    subplot(3,1,2);
+        h = plot(npm.t,npm.y(:,j),'k'); % Deterministic
+        legend(h,'G(q)w(t)',2); legend('boxoff');
+        xlim(T); ylim(lim{j}*([-1 1]+1/3));
+        title('='); box off; ylabel('angle (rad)');
+    subplot(3,1,3); 
+        h = plot(npm.t,npm.v(:,j),'k');  hold on;% Noise
+        legend(h,'v(t)',2); legend('boxoff');
+        xlim(T); ylim(lim{j}*([-1 1]+1/3));
+        title('+'); box off; ylabel('angle (rad)');
+%     subplot(4,1,4);
+%         h = plot(dat.t,dat.w,'k');
+%         xlim(T); ylim(150*[-1 1]-100);
+%         box off; ylabel('force (N)'); 
+%         legend(h,'f',3);legend('boxoff');
     xlabel('time (s)');
     sdf('Latex');
     
